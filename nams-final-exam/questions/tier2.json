@@ -1,0 +1,172 @@
+[
+  {
+    "id": "t2-filter-threshold",
+    "topic": "comprehension",
+    "tier": 2,
+    "mode": "cli",
+    "prompt": [
+      "Hourly PM2.5 readings:  readings = [10, 35, 12, 55, 41].",
+      "In ONE expression, return a list of just the readings STRICTLY ABOVE 35."
+    ],
+    "hint": "a list comprehension with an if",
+    "notes": "[r for r in readings if r > 35] keeps elements passing the test -- the Pythonic replacement for a build-a-list loop. In pandas this is readings[readings > 35]."
+  },
+  {
+    "id": "t2-share-pct",
+    "topic": "comprehension",
+    "tier": 2,
+    "mode": "cli",
+    "prompt": [
+      "Budget by category ($M):  vals = [40, 30, 30].",
+      "In ONE expression, return each value as a PERCENT of the total, rounded",
+      "to 1 decimal  ->  [40.0, 30.0, 30.0]."
+    ],
+    "hint": "a comprehension combining round, the value, and sum(vals)",
+    "notes": "Combine a reduction (sum) with a per-element transform. sum(vals) inside the comprehension is recomputed each pass; bind it to a variable first when the list is large."
+  },
+  {
+    "id": "t2-dot-weighted",
+    "topic": "numpy-dot",
+    "tier": 2,
+    "mode": "cli",
+    "prompt": [
+      "Portfolio weights and returns:",
+      "  w = np.array([0.2, 0.3, 0.5])",
+      "  r = np.array([10.0, 5.0, 8.0])",
+      "In ONE expression, compute the weighted-average return (their dot product)."
+    ],
+    "hint": "the @ operator (or np.dot)",
+    "notes": "w @ r multiplies elementwise then sums -- a dot product. It powers weighted averages, linear models (X @ beta), and your polynomial eval (coef @ powers)."
+  },
+  {
+    "id": "t2-count-above",
+    "topic": "accumulator",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "An air-quality sensor reports hourly PM2.5 readings. Write",
+      "count_unhealthy(readings, limit) returning how many readings are",
+      "STRICTLY ABOVE limit."
+    ],
+    "entry": "count_unhealthy",
+    "starter": "def count_unhealthy(readings, limit):\n    # your code here\n    pass",
+    "visible": [
+      "count_unhealthy([10, 35, 12, 55, 55], 35) == 2",
+      "count_unhealthy([], 10) == 0"
+    ],
+    "hint": "start a counter at 0; loop; add 1 when r > limit",
+    "notes": "Accumulator pattern. Boundary gotcha: 'strictly above' is > not >=. sum(1 for r in readings if r > limit) is an accepted one-liner."
+  },
+  {
+    "id": "t2-season",
+    "topic": "conditionals",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "Dataset rows carry a month [1-12] and day [1-31]. Write season(month, day)",
+      "returning 'Winter', 'Spring', 'Summer', or 'Fall'. Ranges:",
+      "  Spring Mar 20 - Jun 20,  Summer Jun 21 - Sep 22,",
+      "  Fall   Sep 23 - Dec 20,  Winter Dec 21 - Mar 19."
+    ],
+    "entry": "season",
+    "starter": "def season(month, day):\n    # your code here\n    pass",
+    "visible": [
+      "season(3, 19) == 'Winter'",
+      "season(3, 21) == 'Spring'",
+      "season(7, 1)  == 'Summer'"
+    ],
+    "hint": "compare (month, day) tuples, or branch on month with day boundaries",
+    "notes": "Boundary-heavy branching. Comparing tuples -- (3,20) <= (month,day) <= (6,20) -- is a clean trick. Watch the wrap-around: Winter spans Dec into Mar, so it's the 'else'."
+  },
+  {
+    "id": "t2-second-largest",
+    "topic": "algorithm",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "Daily active-user counts. Write second_largest(xs) returning the SECOND",
+      "largest DISTINCT value. Assume at least two distinct values."
+    ],
+    "entry": "second_largest",
+    "starter": "def second_largest(xs):\n    # your code here\n    pass",
+    "visible": [
+      "second_largest([4, 7, 7, 1, 5]) == 5",
+      "second_largest([10, 20]) == 10"
+    ],
+    "hint": "dedupe (set) then sort, or track the top two in one pass",
+    "notes": "sorted(set(xs))[-2] is concise; a one-pass 'largest + runner-up' scan is O(n) -- the usual interview answer. Distinctness matters: repeated 7s must not become their own runner-up."
+  },
+  {
+    "id": "t2-tip-total",
+    "topic": "formatting",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "Write total_with_tip(bill, tip_pct) returning the final bill (bill plus",
+      "tip_pct percent) as a string like '$32.70' -- exactly two decimals."
+    ],
+    "entry": "total_with_tip",
+    "starter": "def total_with_tip(bill, tip_pct):\n    # your code here\n    pass",
+    "visible": [
+      "total_with_tip(27.95, 17) == '$32.70'",
+      "total_with_tip(10, 0)     == '$10.00'"
+    ],
+    "hint": "compute bill * (1 + tip_pct/100), then format with  f'${x:.2f}'",
+    "notes": "Mirrors your T2 tip calculator. Keep the arithmetic in floats and format only at the very end; :.2f both rounds for display and pads to two places."
+  },
+  {
+    "id": "t2-times-table",
+    "topic": "nested-loops",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "Write times_table(n) returning an n x n multiplication table as a list of",
+      "lists, where cell [i][j] = (i+1) * (j+1). Build it -- no hard-coding."
+    ],
+    "entry": "times_table",
+    "starter": "def times_table(n):\n    # your code here\n    pass",
+    "visible": [
+      "times_table(2) == [[1, 2], [2, 4]]",
+      "times_table(1) == [[1]]"
+    ],
+    "hint": "nested loops (or nested comprehensions): outer builds rows, inner builds columns",
+    "notes": "Nested iteration. The comprehension form is [[(i+1)*(j+1) for j in range(n)] for i in range(n)]. n = 0 should give an empty table []."
+  },
+  {
+    "id": "t2-valid-guess",
+    "topic": "validation",
+    "tier": 2,
+    "mode": "script",
+    "prompt": [
+      "Hangman input check. Write is_valid_guess(s) returning True only when s is",
+      "a SINGLE alphabetic character (e.g. 'a' or 'Q'), otherwise False."
+    ],
+    "entry": "is_valid_guess",
+    "starter": "def is_valid_guess(s):\n    # your code here\n    pass",
+    "visible": [
+      "is_valid_guess('a')  == True",
+      "is_valid_guess('ab') == False",
+      "is_valid_guess('1')  == False"
+    ],
+    "hint": "the length must be 1 AND it must be alphabetic (.isalpha())",
+    "notes": "Combine two conditions with `and`: len(s) == 1 and s.isalpha(). .isalpha() is already False for digits, spaces, and the empty string."
+  },
+  {
+    "id": "t2-avg-rent",
+    "topic": "pandas",
+    "tier": 2,
+    "mode": "script",
+    "requires": "pandas",
+    "prompt": [
+      "A rentals DataFrame has columns 'city' and 'rent'. Write avg_rent(df, city)",
+      "returning the MEAN rent over the rows whose city matches (a float)."
+    ],
+    "entry": "avg_rent",
+    "starter": "def avg_rent(df, city):\n    # your code here\n    pass",
+    "visible": [
+      "avg_rent(df, 'Ottawa') == 2100.0    # on the sample df"
+    ],
+    "hint": "boolean-filter the rows, then .mean() the rent column",
+    "notes": "df[df['city'] == city]['rent'].mean() filters then reduces. That is groupby's per-group logic by hand; df.groupby('city')['rent'].mean() does every city at once."
+  }
+]

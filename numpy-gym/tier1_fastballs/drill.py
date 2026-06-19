@@ -1,13 +1,16 @@
 """Tier 1 -- Fastballs: interactive drill CLI.
 
 Active recall with immediate feedback. You are shown a plain-English spec,
-you type a SINGLE NumPy expression, and you're told right/wrong instantly.
-You never see the solution.
+you type a SINGLE expression, and you're told right/wrong instantly.
+You never see the solution. Drills span scientific libraries (numpy,
+pandas, matplotlib) and can be sliced by library, group, or topic.
 
 Run from anywhere:
 
-    python drill.py                       # interactive: pick topics + rep count
-    python drill.py --reps 50             # 50 reps, all topics
+    python drill.py                       # interactive: pick library/topics + reps
+    python drill.py --reps 50             # 50 reps, all libraries
+    python drill.py --libs pandas         # only pandas drills
+    python drill.py --libs numpy pandas   # two whole libraries
     python drill.py --groups random ranges
     python drill.py --topics arange linspace --reps 20
     python drill.py --seed 123 --reps 30  # fully reproducible session
@@ -68,6 +71,9 @@ def check(expected, actual, mode):
         if mode == "exact_dtype":
             a, e = np.asarray(actual), np.asarray(expected)
             return a.dtype == e.dtype and np.array_equal(a, e)
+        if mode == "pandas":
+            # Series/DataFrame: .equals enforces values, index, and dtype.
+            return bool(expected.equals(actual))
         # default: exact value match (dtype-agnostic)
         return np.array_equal(np.asarray(actual), np.asarray(expected))
     except Exception:
@@ -128,12 +134,31 @@ def _fmt(value):
 # Topic selection
 # ----------------------------------------------------------------------
 
+def _drop_unavailable(topics):
+    """Drop topics whose backing library isn't installed; report what was cut."""
+    kept = []
+    dropped = {}
+    for t in topics:
+        lib = G.library_of_topic(t)
+        if G.library_available(lib):
+            kept.append(t)
+        else:
+            dropped.setdefault(lib, []).append(t)
+    for lib, ts in dropped.items():
+        print(f"({lib} not installed - skipping {len(ts)} drills: "
+              f"{', '.join(ts)})")
+    return kept
+
+
 def resolve_topics(args):
     topics = []
     if args.topics:
         topics = [t for t in args.topics if t in G.GENERATORS]
-    elif args.groups:
-        for grp in args.groups:
+    else:
+        # --libs and --groups can be combined (interactive sets both).
+        for lib in args.libs or []:
+            topics.extend(G.topics_for_library(lib))
+        for grp in args.groups or []:
             topics.extend(G.GROUPS.get(grp, []))
     if not topics:
         topics = G.all_topics()
@@ -143,23 +168,23 @@ def resolve_topics(args):
         if t not in seen:
             seen.add(t)
             out.append(t)
-    # Drop matplotlib drills if matplotlib isn't installed.
-    if not G.matplotlib_available():
-        dropped = [t for t in out if t in G.PLOTTING_TOPICS]
-        if dropped:
-            print("(matplotlib not installed - skipping plotting drills: "
-                  f"{', '.join(dropped)})")
-        out = [t for t in out if t not in G.PLOTTING_TOPICS]
-    return out
+    return _drop_unavailable(out)
 
 
 def interactive_setup():
     print("\n=== Tier 1: Fastballs ===")
-    print("Topic groups:")
-    for name, keys in G.GROUPS.items():
-        print(f"  {name:11s} -> {', '.join(keys)}")
-    raw = input("\nPick groups (space-separated), or Enter for ALL: ").strip()
-    groups = raw.split() if raw else []
+    print("Libraries (pick a whole library, or specific groups within one):")
+    for lib, groups in G.LIBRARIES.items():
+        flag = "" if G.library_available(lib) else "  [not installed]"
+        print(f"  {lib:11s} -> {', '.join(groups)}{flag}")
+    raw = input("\nPick libraries or groups (space-separated), "
+                "or Enter for ALL: ").strip()
+    tokens = raw.split()
+    libs = [t for t in tokens if t in G.LIBRARIES]
+    groups = [t for t in tokens if t in G.GROUPS]
+    unknown = [t for t in tokens if t not in G.LIBRARIES and t not in G.GROUPS]
+    if unknown:
+        print(f"  (ignoring unknown: {', '.join(unknown)})")
 
     reps = 20
     raw = input("How many reps? [20]: ").strip()
@@ -168,7 +193,7 @@ def interactive_setup():
             reps = max(1, int(raw))
         except ValueError:
             print("  (not a number -> using 20)")
-    return groups, reps
+    return libs, groups, reps
 
 
 # ----------------------------------------------------------------------
@@ -281,8 +306,11 @@ def _summary(correct, attempted, skipped, times, best_streak, quit_early=False):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description="Tier 1 NumPy fastball drills.")
+    p = argparse.ArgumentParser(description="Tier 1 scientific-computing "
+                                "fastball drills (numpy / pandas / matplotlib).")
     p.add_argument("--reps", type=int, help="number of reps")
+    p.add_argument("--libs", nargs="+",
+                   help=f"whole libraries: {', '.join(G.LIBRARIES)}")
     p.add_argument("--topics", nargs="+", help="specific topic keys")
     p.add_argument("--groups", nargs="+",
                    help=f"topic groups: {', '.join(G.GROUPS)}")
@@ -290,8 +318,10 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     # If no selection given at all, fall into the interactive menu.
-    if args.reps is None and not args.topics and not args.groups:
-        groups, reps = interactive_setup()
+    if (args.reps is None and not args.topics and not args.groups
+            and not args.libs):
+        libs, groups, reps = interactive_setup()
+        args.libs = libs
         args.groups = groups
         args.reps = reps
 

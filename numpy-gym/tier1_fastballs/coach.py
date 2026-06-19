@@ -138,6 +138,44 @@ NOTES = {
         "ax.plot(x, y, color='red') sets the line color. Accepts names ('red'), "
         "single letters ('r'), or hex ('#ff0000'). Sibling kwargs: linestyle "
         "('--'), linewidth, marker ('o').",
+
+    # --- pandas ---
+    "series":
+        "pd.Series(data) wraps a 1-D sequence with an index. With no index= "
+        "given you get the default RangeIndex 0..n-1. dtype is inferred like "
+        "NumPy (all ints -> int64, any float -> float64).",
+    "seriesindex":
+        "pd.Series(data, index=[...]) attaches explicit labels. The index "
+        "length must match the data; labels are how you select later "
+        "(s['a']). Two Series are .equals only if values AND index match.",
+    "seriesvalues":
+        "s.values (or the preferred s.to_numpy()) returns the underlying data "
+        "as a plain NumPy ndarray, dropping the index. Use it to hand pandas "
+        "data to NumPy-only code.",
+    "dataframe":
+        "pd.DataFrame({'col': [...], ...}) builds a table from a dict of "
+        "columns: each key is a column name, each value the column's data. All "
+        "columns must be the same length; the row index defaults to 0..n-1.",
+    "dfshape":
+        "df.shape is a (n_rows, n_columns) tuple -- rows first, like a 2-D "
+        "NumPy array. len(df) gives just the row count.",
+    "dfcolumns":
+        "df.columns is an Index of the column names. Wrap it in list(...) for "
+        "a plain Python list; df.index is the row labels counterpart.",
+    "selectcol":
+        "df['col'] returns that column as a Series (1-D). df[['col']] with a "
+        "LIST returns a one-column DataFrame instead -- single brackets vs "
+        "double brackets is the usual gotcha.",
+    "dfhead":
+        "df.head(n) returns the first n rows (default 5) as a DataFrame; "
+        "df.tail(n) returns the last n. Handy for a quick peek at big tables.",
+    "colmean":
+        "df['col'].mean() reduces a column to its mean, skipping NaN by "
+        "default. df.mean() (no column) reduces every numeric column at once, "
+        "returning a Series indexed by column name.",
+    "colsum":
+        "df['col'].sum() totals a column, skipping NaN. As with mean, df.sum() "
+        "reduces all columns; sum over string columns concatenates them.",
 }
 
 
@@ -154,11 +192,12 @@ def explain(rep) -> str:
 _MODEL = os.environ.get("NUMPY_GYM_MODEL", "claude-opus-4-8")
 
 _SYSTEM = (
-    "You are a concise NumPy tutor helping a student during a fast recall "
-    "drill. They just attempted a single-expression problem and want to "
-    "understand it. Answer their question in a few sentences. Focus on the "
-    "concept and the common gotcha. Use plain text (no LaTeX). Do not write "
-    "long code listings — a short inline expression is fine."
+    "You are a concise scientific-Python tutor (NumPy, pandas, matplotlib) "
+    "helping a student during a fast recall drill. They just attempted a "
+    "single-expression problem and want to understand it. Answer their "
+    "question in a few sentences. Focus on the concept and the common gotcha. "
+    "Use plain text (no LaTeX). Do not write long code listings — a short "
+    "inline expression is fine."
 )
 
 

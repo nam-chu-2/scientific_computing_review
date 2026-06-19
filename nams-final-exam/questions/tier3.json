@@ -1,0 +1,208 @@
+[
+  {
+    "id": "t3-vec-zscore",
+    "topic": "vectorization",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "Below is a SLOW pure-Python z-score normalizer for station temperatures.",
+      "Rewrite zscore(xs) with NumPy and NO loops; return a NumPy array. Same",
+      "outputs.",
+      "    def zscore(xs):",
+      "        mean = sum(xs) / len(xs)",
+      "        var  = sum((x - mean) ** 2 for x in xs) / len(xs)",
+      "        return [(x - mean) / var ** 0.5 for x in xs]"
+    ],
+    "entry": "zscore",
+    "starter": "import numpy as np\n\ndef zscore(xs):\n    mean = sum(xs) / len(xs)\n    var = sum((x - mean) ** 2 for x in xs) / len(xs)\n    return [(x - mean) / var ** 0.5 for x in xs]",
+    "visible": [
+      "zscore([1, 2, 3, 4, 5])  ~=  [-1.414, -0.707, 0.0, 0.707, 1.414]"
+    ],
+    "hint": "a.mean() and a.std() reduce the whole array; (a - a.mean()) broadcasts",
+    "notes": "Vectorizing pushes the loop into NumPy's C layer. a - a.mean() subtracts a scalar from every element (broadcasting). np.std defaults to population std (ddof=0), which matches the / len(xs) in the slow version."
+  },
+  {
+    "id": "t3-vec-poly",
+    "topic": "vectorization",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "Your polynomial exercise, vectorized. Write poly(x, coef) evaluating",
+      "p(x) = coef[0] + coef[1]*x + coef[2]*x**2 + ...  using NumPy and NO loops",
+      "(don't use np.poly1d). x is a scalar; coef is a list of coefficients.",
+      "    # slow version:",
+      "    def poly(x, coef):",
+      "        total = 0",
+      "        for n in range(len(coef)):",
+      "            total += coef[n] * x ** n",
+      "        return total"
+    ],
+    "entry": "poly",
+    "starter": "import numpy as np\n\ndef poly(x, coef):\n    total = 0\n    for n in range(len(coef)):\n        total += coef[n] * x ** n\n    return total",
+    "visible": [
+      "poly(2, [1, 1, 1]) == 7      # 1 + 2 + 4",
+      "poly(0, [5, 9, 9]) == 5"
+    ],
+    "hint": "powers = x ** np.arange(len(coef)); then a dot product with coef",
+    "notes": "x ** np.arange(n) builds [x^0, x^1, ..., x^(n-1)] with no loop; coef @ powers sums coef[k]*x^k. This is the array-ops version of your cumprod polynomial drill."
+  },
+  {
+    "id": "t3-vec-cumsum",
+    "topic": "vectorization",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "Write running_total(xs) returning the cumulative sum as a NumPy array,",
+      "vectorized -- NO Python loop.  e.g. [3, 1, 4] -> [3, 4, 8]."
+    ],
+    "entry": "running_total",
+    "starter": "import numpy as np\n\ndef running_total(xs):\n    # vectorize: no loops\n    pass",
+    "visible": [
+      "running_total([3, 1, 4])  ->  [3, 4, 8]"
+    ],
+    "hint": "np.cumsum",
+    "notes": "np.cumsum computes the running total in C, no loop. Contrast Tier 2's accumulator loops -- here the loop is forbidden on purpose to build the vectorizing reflex."
+  },
+  {
+    "id": "t3-normalize-rows",
+    "topic": "broadcasting",
+    "tier": 3,
+    "mode": "script",
+    "requires": "numpy",
+    "prompt": [
+      "Each row of a 2-D array is a category's counts. Write normalize_rows(mat)",
+      "returning a NumPy array where each ROW is divided by its own sum (so every",
+      "row sums to 1). Vectorized -- NO loops. Mind the broadcasting shape."
+    ],
+    "entry": "normalize_rows",
+    "starter": "import numpy as np\n\ndef normalize_rows(mat):\n    # vectorize: no loops\n    pass",
+    "visible": [
+      "normalize_rows([[1, 1], [1, 3]])  ->  [[0.5, 0.5], [0.25, 0.75]]"
+    ],
+    "hint": "row sums with axis=1 and keepdims=True so the shape broadcasts back over the rows",
+    "notes": "a.sum(axis=1) has shape (rows,), which won't broadcast against (rows, cols). keepdims=True keeps it (rows, 1), so a / a.sum(axis=1, keepdims=True) divides each row by its own total. Classic broadcasting gotcha."
+  },
+  {
+    "id": "t3-bug-misclass",
+    "topic": "debugging",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "This should count positions where predicted labels disagree with the true",
+      "labels (a misclassification count = Hamming distance). It's buggy -- fix it",
+      "for any two equal-length sequences.",
+      "    def mismatches(pred, true):",
+      "        count = 0",
+      "        for i in range(len(pred) - 1):   # bug",
+      "            if pred[i] == true[i]:        # bug",
+      "                count += 1",
+      "        return count"
+    ],
+    "entry": "mismatches",
+    "starter": "def mismatches(pred, true):\n    count = 0\n    for i in range(len(pred) - 1):   # bug\n        if pred[i] == true[i]:        # bug\n            count += 1\n    return count",
+    "visible": [
+      "mismatches(['cat','dog','cat'], ['cat','dog','fish']) == 1"
+    ],
+    "hint": "two bugs: the range stops one short, and the comparison is inverted (== counts matches)",
+    "notes": "range(len - 1) skips the final index; use range(len(pred)). And != counts the disagreements (the misclassifications), not ==. Iterating zip(pred, true) avoids indexing entirely."
+  },
+  {
+    "id": "t3-bug-mutable-default",
+    "topic": "debugging",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "This should start a FRESH log on each call with no log given, append the",
+      "reading, and return it. But logs leak between calls. Fix the default-arg bug.",
+      "    def add_reading(value, log=[]):   # bug",
+      "        log.append(value)",
+      "        return log"
+    ],
+    "entry": "add_reading",
+    "starter": "def add_reading(value, log=[]):   # bug\n    log.append(value)\n    return log",
+    "visible": [
+      "add_reading(10) == [10]    # and a SECOND fresh call must give [20], not [10, 20]"
+    ],
+    "hint": "default arguments are created ONCE, at definition; use None as the default and build a new list inside",
+    "notes": "A mutable default ([]) is shared across every call, so it accumulates. Fix: def add_reading(value, log=None): if log is None: log = []. Top Python interview gotcha."
+  },
+  {
+    "id": "t3-bug-pct",
+    "topic": "debugging",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "This should return what PERCENT `part` is of `whole` (pct(1, 4) -> 25.0),",
+      "but it returns 0.0 for everything. Fix the bug.",
+      "    def pct(part, whole):",
+      "        return part // whole * 100   # bug"
+    ],
+    "entry": "pct",
+    "starter": "def pct(part, whole):\n    return part // whole * 100   # bug",
+    "visible": [
+      "pct(1, 4) == 25.0",
+      "pct(3, 4) == 75.0"
+    ],
+    "hint": "// is integer (floor) division, so 1 // 4 == 0 before the * 100. Use true division.",
+    "notes": "1 // 4 floors to 0, then 0 * 100 == 0. Use / for float division: part / whole * 100. A frequent source of silent zeros in metrics code."
+  },
+  {
+    "id": "t3-dedup-fast",
+    "topic": "complexity",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "De-duplicate a list of category labels, PRESERVING first-seen order, in",
+      "O(n). Write unique_preserve(xs). (The naive 'if x not in result' scan is",
+      "O(n^2) -- this drill forbids the slow tricks.)"
+    ],
+    "entry": "unique_preserve",
+    "starter": "def unique_preserve(xs):\n    # O(n): use a set for membership, or dict.fromkeys\n    pass",
+    "visible": [
+      "unique_preserve(['a','b','a','c','b']) == ['a', 'b', 'c']"
+    ],
+    "hint": "track seen items in a SET (O(1) membership); or list(dict.fromkeys(xs))",
+    "notes": "Membership in a LIST is O(n), so 'if x not in result' inside a loop is O(n^2). A set gives O(1) membership -> overall O(n). list(dict.fromkeys(xs)) does it in one line and keeps order."
+  },
+  {
+    "id": "t3-twosum",
+    "topic": "complexity",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "Fraud check: do any TWO distinct positions in xs sum to target? Write",
+      "has_pair_sum(xs, target) -> bool, in O(n) (the double loop is O(n^2))."
+    ],
+    "entry": "has_pair_sum",
+    "starter": "def has_pair_sum(xs, target):\n    # O(n): one pass with a set of values seen so far\n    pass",
+    "visible": [
+      "has_pair_sum([2, 7, 11, 15], 9) == True    # 2 + 7",
+      "has_pair_sum([1, 2, 3], 7)      == False"
+    ],
+    "hint": "for each x you need (target - x) seen earlier -- keep seen values in a set",
+    "notes": "Store values as you go: if (target - x) is already in `seen`, you've found a pair. One pass, O(1) lookups -> O(n). The brute-force pair of nested loops is O(n^2)."
+  },
+  {
+    "id": "t3-bug-running-mean",
+    "topic": "debugging",
+    "tier": 3,
+    "mode": "script",
+    "prompt": [
+      "This should return the running average after each reading -- result[i] is",
+      "the mean of xs[0..i]. It's off. Fix it.",
+      "    def running_mean(xs):",
+      "        out, total = [], 0",
+      "        for i, x in enumerate(xs):",
+      "            total += x",
+      "            out.append(total / i)   # bug",
+      "        return out"
+    ],
+    "entry": "running_mean",
+    "starter": "def running_mean(xs):\n    out, total = [], 0\n    for i, x in enumerate(xs):\n        total += x\n        out.append(total / i)   # bug\n        return out",
+    "visible": [
+      "running_mean([2, 4, 6])  ~=  [2.0, 3.0, 4.0]"
+    ],
+    "hint": "enumerate starts at 0, so dividing by i divides by zero on the first item; you've summed i+1 items",
+    "notes": "After appending the (i+1)-th value you've summed i+1 items, so divide by (i + 1), not i (i == 0 even raises ZeroDivisionError). Also: the `return` is indented INSIDE the loop in the starter -- it must sit outside so the whole list is built."
+  }
+]

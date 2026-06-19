@@ -1,0 +1,5 @@
+# Player scratch files (script-mode attempts) -- keep the folder + its README.
+attempts/*.py
+
+__pycache__/
+*.pyc

@@ -1,0 +1,217 @@
+[
+  {
+    "id": "t1-total-rainfall",
+    "topic": "reduction",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "A weather station logged daily rainfall in mm:  rain = [12, 0, 5, 8, 3].",
+      "In ONE expression, compute the TOTAL rainfall for the period."
+    ],
+    "hint": "the built-in that adds up an iterable",
+    "notes": "sum(iterable) reduces a sequence to a single total. The data-science reflex is to reach for a reduction (sum / mean / max) instead of writing a loop."
+  },
+  {
+    "id": "t1-mean-temp",
+    "topic": "reduction",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "Daily high temperatures (C):  temps = [18, 21, 19, 24, 22].",
+      "In ONE expression, compute the MEAN temperature."
+    ],
+    "hint": "total divided by count -- or np.mean",
+    "notes": "Mean = sum / len. np.mean(temps) and statistics.mean(temps) give the same value; all are accepted because grading compares values, not text."
+  },
+  {
+    "id": "t1-count-records",
+    "topic": "length",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "survey = ['yes', 'no', 'yes', 'maybe', 'no', 'yes'].",
+      "In ONE expression, how many responses are there?"
+    ],
+    "hint": "the built-in that measures length",
+    "notes": "len(seq) returns the element count. For a DataFrame, len(df) or df.shape[0] gives the row count."
+  },
+  {
+    "id": "t1-last-price",
+    "topic": "indexing",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "Closing prices:  prices = [101.2, 99.8, 103.5, 102.1].",
+      "In ONE expression, get the MOST RECENT (last) price."
+    ],
+    "hint": "negative indexing",
+    "notes": "Negative indices count from the end: prices[-1] is the last element. No need to compute len(prices) - 1."
+  },
+  {
+    "id": "t1-first-three",
+    "topic": "slicing",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "readings = [7, 4, 9, 2, 8, 5].",
+      "In ONE expression, get the FIRST THREE readings as a list."
+    ],
+    "hint": "a slice from the start",
+    "notes": "Slicing readings[:3] takes indices 0, 1, 2 (stop is exclusive) and returns a new list, so it won't alias the original."
+  },
+  {
+    "id": "t1-reverse-series",
+    "topic": "slicing",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "series = [1, 2, 3, 4, 5].",
+      "In ONE expression, REVERSE it (last to first) as a new list."
+    ],
+    "hint": "a slice with a negative step",
+    "notes": "series[::-1] steps backwards over the whole sequence, returning a reversed copy. list(reversed(series)) also works."
+  },
+  {
+    "id": "t1-upper-code",
+    "topic": "strings",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "A station code came in lowercase:  code = 'yyz'.",
+      "In ONE expression, return it in UPPERCASE."
+    ],
+    "hint": "a string method",
+    "notes": ".upper() returns an uppercased copy (strings are immutable). .lower() is the inverse; both are common when normalizing labels before matching."
+  },
+  {
+    "id": "t1-normalize-label",
+    "topic": "strings",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "A category label has mixed case:  label = 'Housing'.",
+      "In ONE expression, return it in lowercase for consistent matching."
+    ],
+    "hint": "a string method",
+    "notes": "Lowercasing before comparing makes matching case-insensitive -- 'Housing', 'housing', and 'HOUSING' all collapse to one key."
+  },
+  {
+    "id": "t1-money-format",
+    "topic": "formatting",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "amount = 1234.5  (dollars).",
+      "In ONE expression, format it as the string '$1234.50' (exactly two decimals)."
+    ],
+    "hint": "an f-string with a format spec, like  f'{x:.2f}'",
+    "notes": "f'{x:.2f}' formats a float to two decimals AND pads ($10.00, not $10.0). round(x, 2) changes the value but not how it prints."
+  },
+  {
+    "id": "t1-parse-double",
+    "topic": "type-conversion",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "A form field arrives as text:  raw = '42'.",
+      "In ONE expression, convert it to an integer and double it (-> 84)."
+    ],
+    "hint": "int(...) then arithmetic",
+    "notes": "input() and form fields are strings; int('42') parses to 42. Forgetting the conversion is the classic bug: '42' * 2 is '4242', not 84."
+  },
+  {
+    "id": "t1-is-even",
+    "topic": "modulo",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "n = 7.",
+      "In ONE expression, return True if n is EVEN, else False."
+    ],
+    "hint": "the remainder operator %",
+    "notes": "n % 2 is the remainder after dividing by 2; it is 0 for even numbers. n % 2 == 0 is the idiomatic even test."
+  },
+  {
+    "id": "t1-full-pages",
+    "topic": "integer-division",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "You show 10 records per page and have total = 47 records.",
+      "In ONE expression, how many COMPLETELY full pages are there?"
+    ],
+    "hint": "integer (floor) division  //",
+    "notes": "// is floor division: 47 // 10 == 4. Its partner % gives the leftover (47 % 10 == 7). For pages including a partial one, use math.ceil(total / 10)."
+  },
+  {
+    "id": "t1-round-rate",
+    "topic": "rounding",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "rate = 0.18342.",
+      "In ONE expression, round it to 2 decimal places."
+    ],
+    "hint": "the round built-in",
+    "notes": "round(x, ndigits) rounds to ndigits decimals -> 0.18. Python uses banker's rounding (half to even): round(0.5) == 0 and round(2.5) == 2."
+  },
+  {
+    "id": "t1-arange-evens",
+    "topic": "numpy-creation",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "In ONE expression, build the NumPy array [0, 2, 4, 6, 8] using np.arange."
+    ],
+    "hint": "np.arange(start, stop, step) -- stop is exclusive",
+    "notes": "np.arange(0, 10, 2) counts by step with an EXCLUSIVE stop, like range(). For a fixed COUNT of points (endpoints included) use np.linspace."
+  },
+  {
+    "id": "t1-cumprod-growth",
+    "topic": "numpy-cumulative",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "Annual growth factors:  factors = np.array([2, 3, 4]).",
+      "In ONE expression, return the running (cumulative) PRODUCT  ->  [2, 6, 24]."
+    ],
+    "hint": "np.cumprod",
+    "notes": "np.cumprod gives the running product; np.cumsum the running sum. cumprod over powers is the trick behind evaluating a polynomial without a loop."
+  },
+  {
+    "id": "t1-max-peak",
+    "topic": "reduction",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "Hourly electricity load (MW):  load = [3.1, 4.8, 4.2, 5.6, 5.0].",
+      "In ONE expression, return the PEAK (maximum) load."
+    ],
+    "hint": "the max built-in",
+    "notes": "max(seq) returns the largest element; np.max and arr.max() match. To find WHERE the peak occurs, use np.argmax."
+  },
+  {
+    "id": "t1-membership",
+    "topic": "membership",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "pollutants = ['NO2', 'CO2', 'PM25', 'O3'].",
+      "In ONE expression, return True if 'CO2' is in the list."
+    ],
+    "hint": "the `in` operator",
+    "notes": "x in seq tests membership and returns a bool. On a list it scans (O(n)); on a set or dict it is O(1), which matters at scale."
+  },
+  {
+    "id": "t1-dict-lookup",
+    "topic": "dict",
+    "tier": 1,
+    "mode": "cli",
+    "prompt": [
+      "Provincial populations (millions):  pop = {'ON': 14.8, 'QC': 8.6, 'BC': 5.2}.",
+      "In ONE expression, look up Ontario's population."
+    ],
+    "hint": "index the dict by its key",
+    "notes": "pop['ON'] returns the value for that key (KeyError if missing). pop.get('ON') returns None instead of raising -- safer when a key may be absent."
+  }
+]

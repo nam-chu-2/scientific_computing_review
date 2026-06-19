@@ -505,6 +505,163 @@ def gen_plot_color(rng):
 
 
 # ----------------------------------------------------------------------
+# pandas -- Series / DataFrame fundamentals
+#
+# Each rep imports pandas in its `setup` (so `pd` is defined in the eval
+# namespace) and, where it operates on existing data, also builds the
+# object. Series/DataFrame answers are checked with `.equals` (compare
+# mode "pandas"), which also enforces matching index and dtype.
+# ----------------------------------------------------------------------
+
+_PD = "import pandas as pd\n"
+
+_COLS = ["a", "b", "c", "x", "y", "val"]
+
+
+def gen_series(rng):
+    xs = _ints(rng, rng.randint(3, 5))
+    return Rep(
+        topic="series",
+        prompt=f"Create a pandas Series from the list {_list_repr(xs)} "
+               f"(default 0..n-1 integer index).",
+        solution=f"pd.Series({_list_repr(xs)})",
+        setup=_PD,
+        compare="pandas",
+        hint="pd.Series([...])",
+    )
+
+
+def gen_series_index(rng):
+    labels = rng.sample(["a", "b", "c", "d", "e", "f"], rng.randint(3, 4))
+    xs = _ints(rng, len(labels))
+    return Rep(
+        topic="seriesindex",
+        prompt=f"Create a pandas Series with values {_list_repr(xs)} and the "
+               f"string index {labels}.",
+        solution=f"pd.Series({_list_repr(xs)}, index={labels})",
+        setup=_PD,
+        compare="pandas",
+        hint="pd.Series(data, index=[...])",
+    )
+
+
+def gen_series_values(rng):
+    xs = _ints(rng, rng.randint(3, 5))
+    setup = _PD + f"s = pd.Series({_list_repr(xs)})"
+    return Rep(
+        topic="seriesvalues",
+        prompt=f"Given s = pd.Series({_list_repr(xs)}), get its values as a "
+               f"plain NumPy array.",
+        solution="s.values",
+        setup=setup,
+        compare="exact",
+        hint="s.values  (or s.to_numpy())",
+    )
+
+
+def gen_dataframe(rng):
+    c0, c1 = rng.sample(_COLS, 2)
+    n = rng.randint(3, 4)
+    d0, d1 = _ints(rng, n), _ints(rng, n)
+    return Rep(
+        topic="dataframe",
+        prompt=f"Create a DataFrame with column '{c0}' = {_list_repr(d0)} and "
+               f"column '{c1}' = {_list_repr(d1)}.",
+        solution=f"pd.DataFrame({{'{c0}': {_list_repr(d0)}, "
+                 f"'{c1}': {_list_repr(d1)}}})",
+        setup=_PD,
+        compare="pandas",
+        hint="pd.DataFrame({'col': [...], ...})",
+    )
+
+
+def _df_setup(rng):
+    """Build a small 2-column DataFrame `df`; return (full_setup, df_line, cols)."""
+    c0, c1 = rng.sample(_COLS, 2)
+    n = rng.randint(3, 5)
+    d0, d1 = _ints(rng, n, 1, 9), _ints(rng, n, 1, 9)
+    df_line = (f"df = pd.DataFrame({{'{c0}': {_list_repr(d0)}, "
+               f"'{c1}': {_list_repr(d1)}}})")
+    return _PD + df_line, df_line, (c0, c1)
+
+
+def gen_df_shape(rng):
+    setup, df_line, _ = _df_setup(rng)
+    return Rep(
+        topic="dfshape",
+        prompt=f"Given {df_line}, report df.shape (rows, columns).",
+        solution="df.shape",
+        setup=setup,
+        compare="scalar",
+        hint="df.shape",
+    )
+
+
+def gen_df_columns(rng):
+    setup, df_line, _ = _df_setup(rng)
+    return Rep(
+        topic="dfcolumns",
+        prompt=f"Given {df_line}, get the column names as a Python list.",
+        solution="list(df.columns)",
+        setup=setup,
+        compare="scalar",
+        hint="list(df.columns)",
+    )
+
+
+def gen_select_col(rng):
+    setup, df_line, cols = _df_setup(rng)
+    col = rng.choice(cols)
+    return Rep(
+        topic="selectcol",
+        prompt=f"Given {df_line}, select column '{col}' as a Series.",
+        solution=f"df['{col}']",
+        setup=setup,
+        compare="pandas",
+        hint="df['col']",
+    )
+
+
+def gen_df_head(rng):
+    setup, df_line, _ = _df_setup(rng)
+    k = rng.randint(2, 3)
+    return Rep(
+        topic="dfhead",
+        prompt=f"Given {df_line}, get the first {k} rows.",
+        solution=f"df.head({k})",
+        setup=setup,
+        compare="pandas",
+        hint="df.head(n)",
+    )
+
+
+def gen_col_mean(rng):
+    setup, df_line, cols = _df_setup(rng)
+    col = rng.choice(cols)
+    return Rep(
+        topic="colmean",
+        prompt=f"Given {df_line}, compute the mean of column '{col}'.",
+        solution=f"df['{col}'].mean()",
+        setup=setup,
+        compare="close",
+        hint="df['col'].mean()",
+    )
+
+
+def gen_col_sum(rng):
+    setup, df_line, cols = _df_setup(rng)
+    col = rng.choice(cols)
+    return Rep(
+        topic="colsum",
+        prompt=f"Given {df_line}, compute the sum of column '{col}'.",
+        solution=f"df['{col}'].sum()",
+        setup=setup,
+        compare="close",
+        hint="df['col'].sum()",
+    )
+
+
+# ----------------------------------------------------------------------
 # Registry
 # ----------------------------------------------------------------------
 
@@ -542,9 +699,20 @@ GENERATORS = {
     "xticks":    ("ax.set_xticks",                     gen_xticks),
     "yscale":    ("ax.set_yscale",                     gen_yscale),
     "plotcolor": ("ax.plot(color=...)",                gen_plot_color),
+    "series":       ("pd.Series from a list",          gen_series),
+    "seriesindex":  ("pd.Series with a custom index",  gen_series_index),
+    "seriesvalues": ("Series.values",                  gen_series_values),
+    "dataframe":    ("pd.DataFrame from a dict",       gen_dataframe),
+    "dfshape":      ("DataFrame.shape",                gen_df_shape),
+    "dfcolumns":    ("DataFrame.columns",              gen_df_columns),
+    "selectcol":    ("df['col'] selection",            gen_select_col),
+    "dfhead":       ("DataFrame.head",                 gen_df_head),
+    "colmean":      ("column .mean()",                 gen_col_mean),
+    "colsum":       ("column .sum()",                  gen_col_sum),
 }
 
-# Convenience groupings for the menu.
+# Convenience groupings for the menu (each group belongs to one library;
+# see LIBRARIES below).
 GROUPS = {
     "creation":   ["array1d", "array2d", "array3d"],
     "special":    ["zeros", "ones", "full", "empty", "eye", "identity"],
@@ -554,18 +722,65 @@ GROUPS = {
     "inspection": ["shape", "ndim", "size", "dtypeattr"],
     "plotting":   ["plot", "scatter", "bar", "xlabel", "ylabel", "title",
                    "xlim", "ylim", "xticks", "yscale", "plotcolor"],
+    "series":     ["series", "seriesindex", "seriesvalues"],
+    "dataframe":  ["dataframe", "dfshape", "dfcolumns", "selectcol", "dfhead"],
+    "aggregation": ["colmean", "colsum"],
+}
+
+# The scientific library each set of groups belongs to. This is the axis the
+# game splits on: `--libs numpy pandas` drills whole libraries at once, while
+# `--groups`/`--topics` still slice finer. Adding a library = add its import
+# check to _LIBRARY_IMPORT and list its groups here.
+LIBRARIES = {
+    "numpy":      ["creation", "special", "ranges", "random", "dtypes",
+                   "inspection"],
+    "matplotlib": ["plotting"],
+    "pandas":     ["series", "dataframe", "aggregation"],
+}
+
+# Module to import to check a library is installed (numpy is always present).
+_LIBRARY_IMPORT = {
+    "numpy": "numpy",
+    "matplotlib": "matplotlib",
+    "pandas": "pandas",
 }
 
 # Topics that require matplotlib (skipped if it isn't installed).
 PLOTTING_TOPICS = set(GROUPS["plotting"])
 
 
-def matplotlib_available():
+def library_available(lib):
+    """True if the library backing `lib` is importable."""
+    module = _LIBRARY_IMPORT.get(lib)
+    if module is None:
+        return False
     try:
-        import matplotlib  # noqa: F401
+        __import__(module)
         return True
     except ImportError:
         return False
+
+
+def matplotlib_available():
+    """Back-compat shim; prefer library_available('matplotlib')."""
+    return library_available("matplotlib")
+
+
+def topics_for_library(lib):
+    """All topic keys belonging to a library, in registry order."""
+    out = []
+    for group in LIBRARIES.get(lib, []):
+        out.extend(GROUPS.get(group, []))
+    return out
+
+
+def library_of_topic(topic):
+    """Which library a topic belongs to (defaults to 'numpy' if unmapped)."""
+    for lib, groups in LIBRARIES.items():
+        for group in groups:
+            if topic in GROUPS.get(group, []):
+                return lib
+    return "numpy"
 
 
 def all_topics():
